@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+require('dns').setDefaultResultOrder('ipv4first');
 
 const sendEmail = async (options) => {
   // If email credentials are not set, just log to console for testing
@@ -13,7 +14,9 @@ const sendEmail = async (options) => {
 
   // Create transporter
   const transporter = nodemailer.createTransport({
-    service: "Gmail", // You can use other services like SendGrid, Mailgun, etc.
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
