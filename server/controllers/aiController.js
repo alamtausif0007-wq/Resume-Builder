@@ -25,11 +25,10 @@ exports.enhanceProfessionalSummary = async (req, res) => {
       ],
     });
     const enhancedContent = response?.choices[0]?.message?.content;
-console.log("AI Output:", enhancedContent); // Check your server terminal
     return res.status(200).json({ enhancedContent });
   } catch (error) {
+    console.error("Error while enhancing professional summary with AI:", error.message);
     return res.status(400).json({ message: error.message });
-    console.log("Error while enhancing professional summary with AI");
   }
 };
 
@@ -58,8 +57,8 @@ exports.enhanceJobDescription = async (req, res) => {
     const enhancedContent = response?.choices[0]?.message?.content;
     return res.status(200).json({ enhancedContent });
   } catch (error) {
+    console.error("Error while enhancing job description with AI:", error.message);
     return res.status(400).json({ message: error.message });
-    console.log("Error while enhancing job description with AI");
   }
 };
 //controller for uploading a resume to the database
@@ -123,7 +122,7 @@ exports.uploadResume = async (req, res) => {
       const newResume=await resume.create({...parsedData,userId,title})
       return res.json({resumeId:newResume._id})
     } catch (error) {
+      console.error("Error while uploading resume with AI:", error.message);
       return res.status(400).json({ message: error.message });
-      console.log("Error while enhancing job description with AI");
     }
   };
