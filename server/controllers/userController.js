@@ -153,6 +153,10 @@ exports.resetPassword = async (req, res) => {
         if (user.resetPasswordExpires < Date.now()) {
             return res.status(400).json({ message: "OTP has expired" });
         }
+        const isSamePassword = await bcrypt.compare(newPassword, user.password);
+        if (isSamePassword) {
+            return res.status(400).json({ message: "New password is same as current password" });
+        }
 
         // Hash new password
         const salt = await bcrypt.genSalt(10);
