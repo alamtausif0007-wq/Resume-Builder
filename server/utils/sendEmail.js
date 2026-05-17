@@ -1,9 +1,6 @@
-const nodemailer = require("nodemailer");
-require('dns').setDefaultResultOrder('ipv4first');
-
 const sendEmail = async (options) => {
-  // If email credentials are not set, just log to console for testing
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  // If API key is not set, just log to console for testing
+  if (!process.env.BREVO_API_KEY) {
     console.log("====================================");
     console.log(`[TEST MODE] Email to: ${options.email}`);
     console.log(`[TEST MODE] Subject: ${options.subject}`);
@@ -12,28 +9,43 @@ const sendEmail = async (options) => {
     return;
   }
 
-  // Create transporter
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 465,
-    secure: true,
-    family: 4, // Force IPv4
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+  // Define email payload for Brevo HTTP API
+  const payload = {
+    sender: {
+      name: "Resume Builder",
+      email: process.env.EMAIL_USER // Make sure this is a verified sender in Brevo
     },
-  });
-
-  // Define email options
-  const mailOptions = {
-    from: `Resume Builder <${process.env.EMAIL_USER}>`,
-    to: options.email,
+    to: [
+      {
+        email: options.email
+      }
+    ],
     subject: options.subject,
-    text: options.message,
+    textContent: options.message,
   };
 
-  // Send the email
-  await transporter.sendMail(mailOptions);
+  try {
+    // Call Brevo's HTTP API (bypasses Render's SMTP block)
+    // We use Node's native fetch which is available in Node 18+
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "accept": "application/json",
+        "api-key": process.env.BREVO_API_KEY,
+        "content-type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error("Brevo API Error:", errorData);
+      throw new Error(`Failed to send email: ${response.status} ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error("Email sending error:", error);
+    throw error;
+  }
 };
 
 module.exports = sendEmail;
