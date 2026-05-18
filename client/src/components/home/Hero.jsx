@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Hero = () => {
   const {token,user}=useSelector(state=>state.auth)
@@ -20,6 +21,11 @@ const Hero = () => {
   }
   const handlewatchai=async()=>{
    try {
+    if(!token || !user){
+      toast.error("You need to login and subscribe to watch AI")
+      navigate('/app?state=login')
+      return;
+    }
     if(!user.isSubscribed){
       toast.error("You need to subscribe to watch AI")
       navigate('/payment')
@@ -79,7 +85,7 @@ const Hero = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="drop-shadow-md">Watch AI in action</span>
+            <span  className="drop-shadow-md">Watch AI in action</span>
           </button>
         </div>
       </div>
