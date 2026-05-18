@@ -4,6 +4,15 @@ const jwt = require("jsonwebtoken");
 const resume=require('../models/resume')
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
+
+const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const validatePassword = (password) => {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(password);
+};
+
 //prepare token
 const generateToken = (id) => {
     return jwt.sign({userId:id }, process.env.JWT_SECRET, { expiresIn: '7d' });
@@ -12,6 +21,13 @@ const generateToken = (id) => {
 exports.register = async (req, res) => {
     const { name, email, password } = req.body;
     try {
+        if (!validateEmail(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+        if (!validatePassword(password)) {
+            return res.status(400).json({ message: "Password must be at least 8 chars, contain 1 uppercase, 1 lowercase, 1 number, and 1 special character." });
+        }
+
         const user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ message: "User already exists" });
@@ -141,6 +157,10 @@ exports.sendOtp = async (req, res) => {
 exports.resetPassword = async (req, res) => {
     const { email, otp, newPassword } = req.body;
     try {
+        if (!validatePassword(newPassword)) {
+            return res.status(400).json({ message: "New password must be at least 8 chars, contain 1 uppercase, 1 lowercase, 1 number, and 1 special character." });
+        }
+
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });

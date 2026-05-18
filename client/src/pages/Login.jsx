@@ -5,6 +5,16 @@ import { useDispatch } from 'react-redux';
 import { login } from '../app/features/authSlice';
 import toast from 'react-hot-toast';
 import api from'../configs/api'
+
+const validateEmail = (email) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const validatePassword = (password) => {
+    // Minimum 8 characters, at least 1 uppercase, 1 lowercase, 1 number, 1 special character
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(password);
+};
+
 const Login = () => {
     const dispatch=useDispatch();
   const query=new URLSearchParams(window.location.search);
@@ -26,6 +36,16 @@ const handleforgetPassword = async () => {
 
   const handleSubmit = async (e) => {
       e.preventDefault()
+      
+      if (state === 'register') {
+          if (!validateEmail(formData.email)) {
+              return toast.error("Please enter a valid email address.");
+          }
+          if (!validatePassword(formData.password)) {
+              return toast.error("Password must be at least 8 chars, contain 1 uppercase, 1 lowercase, 1 number, and 1 special character.");
+          }
+      }
+
       try {
         const {data}=await api.post(`/api/users/${state}`,formData)
         dispatch(login(data))
@@ -50,6 +70,11 @@ const handleforgetPassword = async () => {
 
   const handleResetPassword = async (e) => {
       e.preventDefault();
+      
+      if (!validatePassword(formData.password)) {
+          return toast.error("New password must be at least 8 chars, contain 1 uppercase, 1 lowercase, 1 number, and 1 special character.");
+      }
+
       try {
           const {data} = await api.post('/api/users/reset-password', {
               email: formData.email,
